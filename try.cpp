@@ -60,29 +60,63 @@ class File{
             filename = f;
         }
 
-        // void saveToFile(string filename) {
-        //         ofstream file(filename);
-        //         if (file.is_open()) {
-        //             file << question << endl;
-        //             file << answer << endl;
-        //             file.close();
-        //             cout << "Flashcard saved successfully!\n";
-        //         } else {
-        //             cout << "Error saving file.\n";
-        //         }
-        //     }
+        void saveToFile(vector<FlashCard> & cards) {
+            ofstream file(filename);
 
-        // void loadFromFile(string filename) {
-        //     ifstream file(filename);
-        //     if (file.is_open()) {
-        //         getline(file, question);
-        //         getline(file, answer);
-        //         file.close();
-        //         cout << "Flashcard loaded successfully!\n";
-        //     } else {
-        //         cout << "Error loading file.\n";
-        //     }
-        // }
+            if(!file){
+                cout << "Error: Could not open file for writing."<<endl;
+            }
+
+              file <<cards.size()<<endl; //no. of cards
+
+              for(auto & card: cards){
+                file << card.getQuestion() <<endl;
+                file << card.getAns() << endl;
+                file << card.getAttempt() << endl;
+                file << card.getCorrect() << endl;
+              }
+
+              file.close();
+              cout << "Flashcard saved to "<< filename << endl;
+        }
+
+        vector<FlashCard> loadFromFile() {
+            vector<FlashCard> cards;
+            ifstream file(filename);
+
+            if(!file){
+                cout << "No existing flashcard file found. Starting with empty file." << endl;
+                return cards;
+            }
+
+            int numcards;
+            file >> numcards;
+            file.ignore();
+
+            for(int i=0; i<numcards; i++){
+                string question, answer;
+                int correct, total;
+
+                getline(file, question);    //output is string, so use getline
+                getline(file, answer);
+
+                file >> correct;        //output is int
+                file >> total;
+                file.ignore();
+
+                FlashCard card(question, answer);
+
+                for(int j=0; j<total; j++){
+                    card.AttemptStat(j<correct);
+                }
+
+                cards.push_back(card);
+            }
+            file.close();
+            cout << "Loaded "<< numcards << " flashcards."<<endl;
+
+            return cards;
+        }
 };
 
 class FlashcardManager{
@@ -90,6 +124,34 @@ class FlashcardManager{
 };
 
 class UserInterface{
+    private: 
+        string username;
+        int choice;
+    public:
+        UserInterface(){}
+        void showWelcome(){
+            cout << "Welcome to flashcard generator!" << endl;
+            cout << "Enter your name: ";
+            getline(cin, username);
+        }
+
+        void showMenu(){
+            cout << "\nFlashcard Generator: " << endl;
+            cout << "1. Add Flashcard" << endl;
+            cout << "2. Review Flashcard" << endl;
+            cout << "3. View Flashcard" << endl;
+            cout << "4. Exit"<<endl;
+            cout << "Enter your choice: ";
+            cin >> choice;
+        }
+
+        int getChoice(){
+            return choice;
+        }
+
+        string getUsername(){
+            return username;
+        }
 
 };
 
@@ -98,19 +160,42 @@ class FlashcardApp{
 };
 
 int main() {
-    FlashCard card("What is 2+2? ","4");
+   //test class File
+   File file("test_fc.dat");
+   vector<FlashCard> cards;
 
-    cout << "Question: "<<card.getQuestion()<<endl;
-    cout << "Answer: "<<card.getAns()<<endl;
+   FlashCard c1("What is 2+2?", "4");
+   FlashCard c2("Who are u?","idk");
 
-    card.AttemptStat(true);
-    card.AttemptStat(false);
-    card.AttemptStat(true);
+   c1.AttemptStat(true);
+   c1.AttemptStat(false);
+   c1.AttemptStat(true);
 
-    cout << "Attempts: "<<card.getAttempt()<<endl;
-    cout << "Correcct: "<<card.getCorrect()<<endl;
-    cout << "Success Rate: "<<card.getSuccessRate()<<endl;
- 
 
+   c2.AttemptStat(true);
+   c2.AttemptStat(false);
+
+
+   cards.push_back(c1);
+   cards.push_back(c2);
+
+    cout<< "Testing save..."<<endl;
+    file.saveToFile(cards);
+
+    cout << "Testing load..."<<endl;
+    vector<FlashCard> loadcard;
+    loadcard = file.loadFromFile();
+
+    cout << "\nLoaded cards:" << endl;
+
+    for(int i = 0; i<(int)loadcard.size() ; i++){
+
+        cout << "Card " << i+1 << ":" << endl;
+        cout << "Q: " << loadcard[i].getQuestion() << endl;
+        cout << "A: " <<  loadcard[i].getAns() << endl;
+        cout << "Attempts: " <<  loadcard[i].getAttempt() << endl;
+        cout << "Correct: " <<  loadcard[i].getCorrect() << endl;
+        cout << endl;
+    }
     return 0;
 }
