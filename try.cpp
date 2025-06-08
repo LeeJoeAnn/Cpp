@@ -18,7 +18,7 @@ class FlashCard {
             question = q;
             answer = a;
             attempt = 0;
-            correct =0;
+            correct = 0;
         }
 
         string getQuestion(){return question;}
