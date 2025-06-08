@@ -1,84 +1,116 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 using namespace std;
 
 // Class for FlashCard
 class FlashCard {
-public:
-    string question;
-    string answer;
+    private:
+        string question;
+        string answer;
+        int attempt;
+        int correct;
 
-    FlashCard() {}
-
-    FlashCard(string q, string a) {
-        question = q;
-        answer = a;
-    }
-
-    void inputCard() {
-        cout << "Enter question: ";
-        getline(cin, question);
-        cout << "Enter answer: ";
-        getline(cin, answer);
-    }
-
-    void displayCard() {
-        cout << "\nFlashcard Loaded:\n";
-        cout << "Q: " << question << "\n";
-        cout << "A: " << answer << "\n";
-    }
-
-    void saveToFile(string filename) {
-        ofstream file(filename);
-        if (file.is_open()) {
-            file << question << endl;
-            file << answer << endl;
-            file.close();
-            cout << "Flashcard saved successfully!\n";
-        } else {
-            cout << "Error saving file.\n";
+    public:
+        FlashCard() {}
+        FlashCard(string q, string a) {
+            question = q;
+            answer = a;
+            attempt = 0;
+            correct =0;
         }
-    }
 
-    void loadFromFile(string filename) {
-        ifstream file(filename);
-        if (file.is_open()) {
-            getline(file, question);
-            getline(file, answer);
-            file.close();
-            cout << "Flashcard loaded successfully!\n";
-        } else {
-            cout << "Error loading file.\n";
+        string getQuestion(){return question;}
+        string getAns(){return answer;}
+        int getAttempt(){return attempt;}
+        int getCorrect(){return correct;}
+
+        void setQuestion(string q){
+            question = q;
         }
-    }
+
+        void setAnsw(string a){
+            answer = a;
+        }
+    
+        void AttemptStat(bool wasCorrect){
+            attempt++;
+            if(wasCorrect){
+                correct++;
+            }
+        }
+
+        int getSuccessRate(){
+            if(attempt == 0)
+                return 0;
+            else
+                return (correct*100)/attempt;
+        }
+   
+};
+
+class File{
+    private:
+        string filename;
+
+    public:
+        File(){}
+        File(string f){
+            filename = f;
+        }
+
+        // void saveToFile(string filename) {
+        //         ofstream file(filename);
+        //         if (file.is_open()) {
+        //             file << question << endl;
+        //             file << answer << endl;
+        //             file.close();
+        //             cout << "Flashcard saved successfully!\n";
+        //         } else {
+        //             cout << "Error saving file.\n";
+        //         }
+        //     }
+
+        // void loadFromFile(string filename) {
+        //     ifstream file(filename);
+        //     if (file.is_open()) {
+        //         getline(file, question);
+        //         getline(file, answer);
+        //         file.close();
+        //         cout << "Flashcard loaded successfully!\n";
+        //     } else {
+        //         cout << "Error loading file.\n";
+        //     }
+        // }
+};
+
+class FlashcardManager{
+
+};
+
+class UserInterface{
+
+};
+
+class FlashcardApp{
+
 };
 
 int main() {
-    FlashCard card;
-    int choice;
+    FlashCard card("What is 2+2? ","4");
 
-    while (true) {
-        cout << "\n=== Flash Card Menu ===\n";
-        cout << "1. Create Flashcard\n";
-        cout << "2. Load Flashcard\n";
-        cout << "3. Exit\n";
-        cout << "Enter your choice: ";
-        cin >> choice;
-        cin.ignore(); // clear newline left in buffer
+    cout << "Question: "<<card.getQuestion()<<endl;
+    cout << "Answer: "<<card.getAns()<<endl;
 
-        if (choice == 1) {
-            card.inputCard();
-            card.saveToFile("flashcard.txt");
-        } else if (choice == 2) {
-            card.loadFromFile("flashcard.txt");
-            card.displayCard();
-        } else if (choice == 3) {
-            break;
-        } else {
-            cout << "Invalid choice. Try again.\n";
-        }
-    }
+    card.AttemptStat(true);
+    card.AttemptStat(false);
+    card.AttemptStat(true);
+
+    cout << "Attempts: "<<card.getAttempt()<<endl;
+    cout << "Correcct: "<<card.getCorrect()<<endl;
+    cout << "Success Rate: "<<card.getSuccessRate()<<endl;
+ 
 
     return 0;
 }
