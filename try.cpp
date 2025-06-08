@@ -119,7 +119,23 @@ class File{
         }
 };
 
-class FlashcardManager{
+class FlashcardManager{     //combine card+file, by add card and save stats from file.
+    private:
+        vector<FlashCard> cards;
+        File *file;
+    
+    public:
+        FlashcardManager(){}
+        FlashcardManager(File *f){
+            file = f;
+            cards = file->loadFromFile();
+        }
+
+        void addcard(string &question, string &answer){
+            FlashCard newcard(question, answer);
+            cards.push_back(newcard);
+            file->saveToFile(cards);
+        }
 
 };
 
@@ -160,42 +176,8 @@ class FlashcardApp{
 };
 
 int main() {
-   //test class File
-   File file("test_fc.dat");
-   vector<FlashCard> cards;
-
-   FlashCard c1("What is 2+2?", "4");
-   FlashCard c2("Who are u?","idk");
-
-   c1.AttemptStat(true);
-   c1.AttemptStat(false);
-   c1.AttemptStat(true);
-
-
-   c2.AttemptStat(true);
-   c2.AttemptStat(false);
-
-
-   cards.push_back(c1);
-   cards.push_back(c2);
-
-    cout<< "Testing save..."<<endl;
-    file.saveToFile(cards);
-
-    cout << "Testing load..."<<endl;
-    vector<FlashCard> loadcard;
-    loadcard = file.loadFromFile();
-
-    cout << "\nLoaded cards:" << endl;
-
-    for(int i = 0; i<(int)loadcard.size() ; i++){
-
-        cout << "Card " << i+1 << ":" << endl;
-        cout << "Q: " << loadcard[i].getQuestion() << endl;
-        cout << "A: " <<  loadcard[i].getAns() << endl;
-        cout << "Attempts: " <<  loadcard[i].getAttempt() << endl;
-        cout << "Correct: " <<  loadcard[i].getCorrect() << endl;
-        cout << endl;
-    }
+    UserInterface ui;
+    ui.showWelcome();
+    ui.showMenu();
     return 0;
 }
