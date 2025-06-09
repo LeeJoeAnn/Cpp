@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstdlib>
+
 using namespace std;
 
 // Class for FlashCard
@@ -21,16 +23,16 @@ class FlashCard {
             correct = 0;
         }
 
-        string getQuestion(){return question;}
-        string getAns(){return answer;}
-        int getAttempt(){return attempt;}
-        int getCorrect(){return correct;}
+        string getQuestion()const{return question;}
+        string getAnswer()const{return answer;}
+        int getAttempt()const{return attempt;}
+        int getCorrect()const{return correct;}
 
         void setQuestion(string q){
             question = q;
         }
 
-        void setAnsw(string a){
+        void setAnswer(string a){
             answer = a;
         }
     
@@ -41,7 +43,7 @@ class FlashCard {
             }
         }
 
-        int getSuccessRate(){
+        int getSuccessRate()const{
             if(attempt == 0)
                 return 0;
             else
@@ -71,7 +73,7 @@ class File{
 
               for(auto & card: cards){
                 file << card.getQuestion() <<endl;
-                file << card.getAns() << endl;
+                file << card.getAnswer() << endl;
                 file << card.getAttempt() << endl;
                 file << card.getCorrect() << endl;
               }
@@ -119,23 +121,49 @@ class File{
         }
 };
 
-class FlashcardManager{     //combine card+file, by add card and save stats from file.
+class FlashCardManager{     //combine card+file, by add card and save stats from file.
     private:
-        vector<FlashCard> cards;
-        File *file;
+        vector<FlashCard> cards;    //A List that holds all the flashcards
+        File *file; // A pointer to handle saving or loading from files
     
     public:
-        FlashcardManager(){}
-        FlashcardManager(File *f){
+        FlashCardManager(){}
+        FlashCardManager(File *f){
             file = f;
-            cards = file->loadFromFile();
+            cards = file->loadFromFile();   // Creates a box and fills it with cards from a file
         }
 
         void addcard(string &question, string &answer){
-            FlashCard newcard(question, answer);
-            cards.push_back(newcard);
-            file->saveToFile(cards);
+            FlashCard newcard(question, answer);    // Make a new flashcard
+            cards.push_back(newcard);   // Add it to your collection
+            file->saveToFile(cards);    // Save everything to file
         }
+
+    // Get number of cards
+    int getSize() const {
+        return cards.size();
+    }
+
+    // Check if deck is empty
+    bool isEmpty() const {
+        return cards.empty();
+    }
+
+    // Get a specific card
+    FlashCard& getCard(int index) {
+        return cards[index];
+    }
+
+    // Get a random card
+    FlashCard& getRandomCard() {
+        int index = rand() % cards.size();
+        return cards[index];
+    }
+
+    // Save current state
+    void saveState() {
+        file->saveToFile(cards);
+    }
 
 };
 
@@ -158,15 +186,59 @@ class UserInterface{
             cout << "3. View Flashcard" << endl;
             cout << "4. Exit"<<endl;
             cout << "Enter your choice: ";
-            cin >> choice;
+            cin>>choice;
         }
 
         int getChoice(){
+            cin.ignore(); // Clear input buffer
             return choice;
         }
 
         string getUsername(){
             return username;
+        }
+
+        void showQuestion(const string& question) {
+             cout << "\nQuestion: " << question << endl;
+             cout << "Press Enter to see the answer...";
+             cin.get();  // Waits for user to think about their answer
+        }
+
+        void showAnswer(const string& answer) {
+            cout << "Answer: " << answer << endl;  // Reveals the correct answer
+        }
+
+        bool askIfCorrect() {
+            char response;
+            cout << "Was your answer correct? (y/n): ";
+            cin >> response;
+            cin.ignore();
+            return (response == 'y' || response == 'Y');  // Returns true/false
+        }
+
+        void showCardStats(const FlashCard& card, int cardNumber) {
+            cout << "Card " << cardNumber << ":" << endl;
+            cout << "  Question: " << card.getQuestion() << endl;
+            cout << "  Answer: " << card.getAnswer() << endl;
+            cout << "  Total Attempts: " << card.getAttempt() << endl;
+            cout << "  Correct Answers: " << card.getCorrect() << endl;
+            cout << "  Success Rate: " << card.getSuccessRate() << "%" << endl;
+        }
+
+        string getText(const string& prompt) {
+            string text;
+            cout << prompt;
+            getline(cin, text);
+            return text;
+        }
+
+        void showMessage(const string& message) {
+            cout << message << endl;
+        }
+
+        void waitForEnter() {
+            cout << "Press Enter to continue...";
+            cin.get();
         }
 
 };
