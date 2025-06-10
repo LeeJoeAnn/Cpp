@@ -217,7 +217,7 @@ class UserInterface{
         }
 
         void showCardStats(const FlashCard& card, int cardNumber) {
-            cout << "Card " << cardNumber << ":" << endl;
+            cout << "\nCard " << cardNumber << ":" << endl;
             cout << "  Question: " << card.getQuestion() << endl;
             cout << "  Answer: " << card.getAnswer() << endl;
             cout << "  Total Attempts: " << card.getAttempt() << endl;
@@ -244,12 +244,139 @@ class UserInterface{
 };
 
 class FlashcardApp{
+    private:
+        UserInterface ui;
+        File file;
+        FlashCardManager *fm;
+
+    void addFlashcard(){
+        string question = ui.getText("\nEnter the question: ");
+        string answer = ui.getText("\nEnter the answer: ");
+
+        fm->addcard(question,answer);
+        cout << "\nFlashcard added successfully"<<endl;
+    }
+
+    void reviewFlashcard(){
+        if(fm->isEmpty()){
+            cout << "\nNo flashcards available to review. Add some first!";
+        }
+
+        cout << "\nReview Session started!";
+        cout << "\n---------------------------";
+
+        int attempt = 0;
+        int i;
+
+        for(i=0; i<fm->getSize(); i++){
+            FlashCard &card = fm->getCard(i);
+
+            ui.showQuestion(card.getQuestion());
+            cin.get();
+            ui.showAnswer(card.getAnswer());
+            bool correct = ui.askIfCorrect();
+            card.AttemptStat(correct);
+
+            attempt++;
+
+            if(correct){
+                cout << "\nGreat Job! You got it right!";
+            }else{
+                cout << "\nThat's okay. Keep practicing!";
+            }
+
+            if(i<(fm->getSize()-1)){
+                char continueReview;
+                cout << "\nContinue reviewing? (y/n): ";
+                cin >> continueReview;
+                cin.clear();
+
+                if(continueReview != 'y' && continueReview != 'Y'){
+                    break;
+                }
+            }
+            fm->saveState();
+        }
+        cout << "\nReview session completed.";
+    }
+
+    void viewProgress(){
+        if(fm->isEmpty()){
+            cout << "\nNo flashcards available. Add some first!";
+        }
+
+        cout << "\nProgress Report for"<< ui.getUsername();
+        cout << "\n-----------------------------------------";
+
+        int totalCards = fm->getSize();
+        int totalAttempts = 0;
+        int totalcorrect = 0;
+        
+        for(int i=0; i<totalCards; i++){
+            FlashCard &card = fm->getCard(i);
+            ui.showCardStats(card, i+1);
+
+            totalAttempts += card.getAttempt();
+            totalcorrect += card.getCorrect();
+        }
+
+        int overallrate;
+        if(totalAttempts>0){
+            overallrate = (totalcorrect*100)/totalAttempts;
+        }else{
+            overallrate = 0;
+        }
+
+        cout << "\nOverall Statistics: "<<endl;
+        cout << "Total cards: "<< totalCards << endl;
+        cout << "Total attempts: "<<totalAttempts<<endl;
+        cout << "Total correct: "<<totalcorrect<<endl;
+        cout << "Overall success rate: "<<overallrate<<"%"<<endl;
+    }
+
+    public:
+        FlashcardApp(){
+            file = File("flashcard.dat");
+            fm = new FlashCardManager(&file);
+        }
+
+        void start(){
+            ui.showWelcome();
+
+            bool running = true;
+            while(running){
+                ui.showMenu();
+                int choice = ui.getChoice();
+                
+                switch(choice){
+                    case 1:
+                        addFlashcard();
+                        break;
+                    case 2:
+                        reviewFlashcard();
+                        break;
+                    case 3:
+                        viewProgress();
+                        break;
+                    case 4:
+                        running = false;
+                        break;
+                    default:
+                        cout << "\nInvalid choice. Please try again."<<endl;
+                }
+                cout << "\nThank you for using the Flashcard Generator "<<ui.getUsername()<<" !";
+            }
+        }
+
+
 
 };
 
 int main() {
-    UserInterface ui;
-    ui.showWelcome();
-    ui.showMenu();
+    FlashcardApp app;
+    app.start();
+    // UserInterface ui;
+    // ui.showWelcome();
+    // ui.showMenu();
     return 0;
 }
