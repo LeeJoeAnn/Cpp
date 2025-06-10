@@ -6,6 +6,12 @@
 
 using namespace std;
 
+enum Difficulty{
+    EASY = 1,
+    MODERATE = 2,
+    DIFFCULT = 3
+};
+
 // Class for FlashCard
 class FlashCard {
     private:
@@ -13,20 +19,26 @@ class FlashCard {
         string answer;
         int attempt;
         int correct;
+        Difficulty level;
 
     public:
-        FlashCard() {}
+        FlashCard() {
+            level = MODERATE;
+        }
         FlashCard(string q, string a) {
             question = q;
             answer = a;
             attempt = 0;
             correct = 0;
+            level = MODERATE;
+
         }
 
         string getQuestion()const{return question;}
         string getAnswer()const{return answer;}
         int getAttempt()const{return attempt;}
         int getCorrect()const{return correct;}
+        Difficulty getLevel(){return level;}
 
         void setQuestion(string q){
             question = q;
@@ -41,6 +53,10 @@ class FlashCard {
             if(wasCorrect){
                 correct++;
             }
+        }
+
+        void setLevel(Difficulty lvl){
+            level = lvl;
         }
 
         int getSuccessRate()const{
@@ -156,6 +172,27 @@ class FlashCardManager{     //combine card+file, by add card and save stats from
 
     // Get a random card
     FlashCard& getRandomCard() {
+        vector<FlashCard *> LvlCards;   //set a vector that store card based on the difficulty level
+
+        for(auto &card: cards){
+            int lvl = 1;
+
+            switch(card.getLevel()){
+                case EASY:
+                    lvl = 1;
+                    break;
+                case MODERATE:
+                    lvl = 2;
+                    break;
+                case DIFFCULT:
+                    lvl = 3;
+                    break;
+            }
+            for(int i = 0; i<lvl; ++i){
+                LvlCards.push_back(&card);
+            }
+        }
+
         int index = rand() % cards.size();
         return cards[index];
     }
@@ -241,6 +278,20 @@ class UserInterface{
             cin.get();
         }
 
+        Difficulty askLevel(){
+            cout << "Rate the difficulty pf this card: "<<endl;
+            cout << "1.Easy\n2.Moderate\n3.Difficult\n";
+            cout << "Enter your choice: ";
+            int choice;
+            cin >> choice;
+            cin.ignore();
+
+            if(choice < 1 || choice > 3){
+                choice = 2;
+            }
+            return static_cast<Difficulty>(choice);
+        }
+
 };
 
 class FlashcardApp{
@@ -249,6 +300,7 @@ class FlashcardApp{
         File file;
         FlashCardManager *fm;
 
+    //for case 1: Add Flashcard
     void addFlashcard(){
         string question = ui.getText("\nEnter the question: ");
         string answer = ui.getText("\nEnter the answer: ");
@@ -257,6 +309,7 @@ class FlashcardApp{
         cout << "\nFlashcard added successfully"<<endl;
     }
 
+    //for case 2: review flash card 
     void reviewFlashcard(){
         if(fm->isEmpty()){
             cout << "\nNo flashcards available to review. Add some first!";
@@ -277,6 +330,8 @@ class FlashcardApp{
             bool correct = ui.askIfCorrect();
             card.AttemptStat(correct);
 
+            Difficulty userRateLvl = ui.askLevel();
+            card.setLevel(userRateLvl);
             attempt++;
 
             if(correct){
@@ -300,6 +355,7 @@ class FlashcardApp{
         cout << "\nReview session completed.";
     }
 
+    // for case 3: view overall progress
     void viewProgress(){
         if(fm->isEmpty()){
             cout << "\nNo flashcards available. Add some first!";
@@ -311,6 +367,8 @@ class FlashcardApp{
         int totalCards = fm->getSize();
         int totalAttempts = 0;
         int totalcorrect = 0;
+
+        int easy = 0, moderate = 0, diff = 0;
         
         for(int i=0; i<totalCards; i++){
             FlashCard &card = fm->getCard(i);
@@ -318,6 +376,18 @@ class FlashcardApp{
 
             totalAttempts += card.getAttempt();
             totalcorrect += card.getCorrect();
+
+            switch(card.getLevel()){
+                case EASY:
+                    easy++;
+                    break;
+                case MODERATE:
+                    moderate++;
+                    break;
+                case DIFFCULT:
+                    diff++;
+                    break;
+            }
         }
 
         int overallrate;
@@ -332,6 +402,12 @@ class FlashcardApp{
         cout << "Total attempts: "<<totalAttempts<<endl;
         cout << "Total correct: "<<totalcorrect<<endl;
         cout << "Overall success rate: "<<overallrate<<"%"<<endl;
+
+        //Difficulty distribution:
+        cout << "\nDifficulty Distribution: "<<endl;
+        cout << "Easy: "<< easy <<endl;
+        cout << "Moderate: "<<moderate<< endl;
+        cout << "Difficult: "<< diff << endl;
     }
 
     public:
