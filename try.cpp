@@ -255,7 +255,7 @@ class UserInterface{
         }
 
         void showCardStats(const FlashCard& card, int cardNumber) {
-            cout << "Card " << cardNumber << ":" << endl;
+            cout << "\nCard " << cardNumber << ":" << endl;
             cout << "  Question: " << card.getQuestion() << endl;
             cout << "  Answer: " << card.getAnswer() << endl;
             cout << "  Total Attempts: " << card.getAttempt() << endl;
