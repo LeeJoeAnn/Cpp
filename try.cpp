@@ -265,11 +265,6 @@ class UserInterface{
             return text;
         }
 
-        void waitForEnter() {
-            cout << "Press Enter to continue...";
-            cin.get();
-        }
-
         Difficulty askLevel(){
             cout << "\nRate the difficulty of this card: "<<endl;
             cout << "1.Easy\n2.Moderate\n3.Difficult\n";
