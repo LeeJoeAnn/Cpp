@@ -265,10 +265,6 @@ class UserInterface{
             return text;
         }
 
-        void showMessage(const string& message) {
-            cout << message << endl;
-        }
-
         void waitForEnter() {
             cout << "Press Enter to continue...";
             cin.get();
@@ -357,7 +353,7 @@ class FlashcardApp{
             cout << "\nNo flashcards available. Add some first!";
         }
 
-        cout << "\nProgress Report for"<< ui.getUsername();
+        cout << "\nProgress Report for "<< ui.getUsername();
         cout << "\n-----------------------------------------";
 
         int totalCards = fm->getSize();
