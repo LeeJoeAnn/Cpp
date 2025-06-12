@@ -155,23 +155,19 @@ class FlashCardManager{     //combine card+file, by add card and save stats from
             file->saveToFile(cards);    // Save everything to file
         }
 
-    // Get number of cards
-    int getSize() const {
+    int getSize() const {       // Get number of cards
         return cards.size();
     }
 
-    // Check if deck is empty
-    bool isEmpty() const {
+    bool isEmpty() const {         // Check if deck is empty
         return cards.empty();
     }
 
-    // Get a specific card
-    FlashCard& getCard(int index) {
+    FlashCard& getCard(int index) {         // Get a specific card
         return cards[index];
     }
 
-    // Get a random card
-    FlashCard& getRandomCard() {
+    FlashCard& getRandomCard() {            // Get a random card
         vector<FlashCard *> LvlCards;   //set a vector that store card based on the difficulty level
 
         for(auto &card: cards){
@@ -197,8 +193,7 @@ class FlashCardManager{     //combine card+file, by add card and save stats from
         return *LvlCards[index];
     }
 
-    // Save current state
-    void saveState() {
+    void saveState() {              // Save current state
         file->saveToFile(cards);
     }
 
@@ -280,7 +275,7 @@ class UserInterface{
         }
 
         Difficulty askLevel(){
-            cout << "Rate the difficulty pf this card: "<<endl;
+            cout << "\nRate the difficulty of this card: "<<endl;
             cout << "1.Easy\n2.Moderate\n3.Difficult\n";
             cout << "Enter your choice: ";
             int choice;
@@ -323,7 +318,7 @@ class FlashcardApp{
         int i;
 
         for(i=0; i<fm->getSize(); i++){
-            FlashCard &card = fm->getCard(i);
+            FlashCard &card = fm->getRandomCard();
 
             ui.showQuestion(card.getQuestion());
             cin.get();
@@ -411,6 +406,7 @@ class FlashcardApp{
         cout << "Difficult: "<< diff << endl;
     }
 
+    //case 4: do quiz
     void quizMode(){
         if(fm->getSize() < 4){
             cout <<"\nNot enough flashcards to generate a quiz (minimum 4)."<<endl;
@@ -468,6 +464,7 @@ class FlashcardApp{
     public:
         FlashcardApp(){
             file = File("flashcard.dat");
+            
             fm = new FlashCardManager(&file);
         }
 
