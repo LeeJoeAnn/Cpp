@@ -3,14 +3,17 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <random>
+#include <algorithm>
 
 using namespace std;
 
 enum Difficulty{
     EASY = 1,
     MODERATE = 2,
-    DIFFCULT = 3
+    DIFFICULT = 3
 };
+
 
 // Class for FlashCard
 class FlashCard {
@@ -22,16 +25,13 @@ class FlashCard {
         Difficulty level;
 
     public:
-        FlashCard() {
-            level = MODERATE;
-        }
+        FlashCard() {}
         FlashCard(string q, string a) {
             question = q;
             answer = a;
             attempt = 0;
             correct = 0;
             level = MODERATE;
-
         }
 
         string getQuestion()const{return question;}
@@ -118,8 +118,8 @@ class File{
                 getline(file, question);    //output is string, so use getline
                 getline(file, answer);
 
-                file >> correct;        //output is int
                 file >> total;
+                file >> correct;        //output is int
                 file.ignore();
 
                 FlashCard card(question, answer);
@@ -175,26 +175,26 @@ class FlashCardManager{     //combine card+file, by add card and save stats from
         vector<FlashCard *> LvlCards;   //set a vector that store card based on the difficulty level
 
         for(auto &card: cards){
-            int lvl = 1;
+            int weight = 1;
 
             switch(card.getLevel()){
                 case EASY:
-                    lvl = 1;
+                    weight = 1;
                     break;
                 case MODERATE:
-                    lvl = 2;
+                    weight = 2;
                     break;
-                case DIFFCULT:
-                    lvl = 3;
+                case DIFFICULT:
+                    weight = 3;
                     break;
             }
-            for(int i = 0; i<lvl; ++i){
+            for(int i = 0; i<weight; ++i){
                 LvlCards.push_back(&card);
             }
         }
 
-        int index = rand() % cards.size();
-        return cards[index];
+        int index = rand() % LvlCards.size();
+        return *LvlCards[index];
     }
 
     // Save current state
@@ -221,7 +221,8 @@ class UserInterface{
             cout << "1. Add Flashcard" << endl;
             cout << "2. Review Flashcard" << endl;
             cout << "3. View Flashcard" << endl;
-            cout << "4. Exit"<<endl;
+            cout << "4. Quiz Mode" << endl;
+            cout << "5. Exit"<<endl;
             cout << "Enter your choice: ";
             cin>>choice;
         }
@@ -254,7 +255,7 @@ class UserInterface{
         }
 
         void showCardStats(const FlashCard& card, int cardNumber) {
-            cout << "\nCard " << cardNumber << ":" << endl;
+            cout << "Card " << cardNumber << ":" << endl;
             cout << "  Question: " << card.getQuestion() << endl;
             cout << "  Answer: " << card.getAnswer() << endl;
             cout << "  Total Attempts: " << card.getAttempt() << endl;
@@ -384,7 +385,7 @@ class FlashcardApp{
                 case MODERATE:
                     moderate++;
                     break;
-                case DIFFCULT:
+                case DIFFICULT:
                     diff++;
                     break;
             }
@@ -408,6 +409,60 @@ class FlashcardApp{
         cout << "Easy: "<< easy <<endl;
         cout << "Moderate: "<<moderate<< endl;
         cout << "Difficult: "<< diff << endl;
+    }
+
+    void quizMode(){
+        if(fm->getSize() < 4){
+            cout <<"\nNot enough flashcards to generate a quiz (minimum 4)."<<endl;
+        }
+
+        int numQuestions = max(4, fm->getSize());
+        for(int q=0; q<numQuestions; ++q){
+            FlashCard &correctcard = fm->getRandomCard();
+            vector<string> options;
+            options.push_back(correctcard.getAnswer());
+
+            while(options.size() < 4){
+                FlashCard &randomcard = fm->getRandomCard();
+                string ans = randomcard.getAnswer();
+                
+                if(ans != correctcard.getAnswer()){
+                    bool Exists = false;
+                    for(string &answer: options){
+                        if(answer == ans){
+                            Exists = true;
+                            break;
+                        }
+                    }
+                    bool notAdded = !Exists;
+
+                    if(notAdded){
+                        options.push_back(ans); //add the option that hvnt in the list.
+                    }
+                }
+            }
+            random_shuffle(options.begin(), options.end());
+
+            cout << "\nQ" <<(q+1)<<": "<<correctcard.getQuestion()<<endl;
+            for(int i=0; i<4; i++){
+                cout << i+1 <<". "<<options[i]<<endl;
+            }
+
+            cout << "Your answer (1-4): ";
+            int choice;
+            cin >> choice;
+            cin.ignore();
+
+            if(options[choice-1] == correctcard.getAnswer()){
+                cout << "Correct!\n";
+                correctcard.AttemptStat(true);
+            }else{
+                cout << "Incorrect. Correct answer: "<<correctcard.getAnswer()<<endl;
+                correctcard.AttemptStat(false);
+            }
+        }
+        fm->saveState();
+        cout << "\nQuiz finished!\n";
     }
 
     public:
@@ -435,6 +490,9 @@ class FlashcardApp{
                         viewProgress();
                         break;
                     case 4:
+                        quizMode();
+                        break;
+                    case 5:
                         running = false;
                         break;
                     default:
