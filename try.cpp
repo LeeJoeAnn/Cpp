@@ -401,6 +401,7 @@ class FlashcardApp{
     void quizMode(){
         if(fm->getSize() < 4){
             cout <<"\nNot enough flashcards to generate a quiz (minimum 4)."<<endl;
+            return;
         }
 
         int totalAvailable = fm-> getSize();
