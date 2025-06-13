@@ -403,7 +403,21 @@ class FlashcardApp{
             cout <<"\nNot enough flashcards to generate a quiz (minimum 4)."<<endl;
         }
 
-        int numQuestions = max(4, fm->getSize());
+        int totalAvailable = fm-> getSize();
+        int numQuestions;
+
+        cout << "\nHow many questions would you like in the quiz? (Max " << totalAvailable << "): ";
+        cin >> numQuestions;
+        cin.ignore(); // clear newline
+
+        if (numQuestions < 1 || numQuestions > totalAvailable) {
+            cout << "Invalid number. Setting to 4 questions by default.\n";
+            numQuestions = 4;
+        }
+
+        int correctCount = 0;   // Track correct answers
+        int wrongCount = 0; // Track incorrect answers
+
         for(int q=0; q<numQuestions; ++q){
             FlashCard &correctcard = fm->getRandomCard();
             vector<string> options;
@@ -440,16 +454,26 @@ class FlashcardApp{
             cin >> choice;
             cin.ignore();
 
-            if(options[choice-1] == correctcard.getAnswer()){
+            if(choice >= 1 && choice <= 4 && options[choice-1] == correctcard.getAnswer()){
                 cout << "Correct!\n";
                 correctcard.AttemptStat(true);
+                correctCount++;
+
             }else{
                 cout << "Incorrect. Correct answer: "<<correctcard.getAnswer()<<endl;
                 correctcard.AttemptStat(false);
+                wrongCount++;
             }
         }
         fm->saveState();
         cout << "\nQuiz finished!\n";
+        cout << "-----------------------------\n";
+        cout << "Total Questions: " << numQuestions << endl;
+        cout << "Correct Answers: " << correctCount << endl;
+        cout << "Incorrect Answers: " << wrongCount << endl;
+        int percentage = (correctCount * 100) / numQuestions;
+        cout << "Score: " << percentage << "%\n";
+        cout << "-----------------------------\n";
     }
 
     public:
